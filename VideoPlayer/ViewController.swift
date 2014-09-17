@@ -46,7 +46,7 @@ class ViewController: UIViewController {
         if let player = moviePlayer {
             NSLog("setting stuff")
             player.view.frame = self.view.bounds
-            self.presentViewController(moviePlayer, animated: true, completion: nil)
+            self.presentViewController(moviePlayer!, animated: true, completion: nil)
             NSLog("all done")
         }
         else {
