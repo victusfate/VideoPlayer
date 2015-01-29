@@ -10,11 +10,16 @@ import UIKit
 import CoreMedia
 import MediaPlayer
 
+import AVKit
+import AVFoundation
+
 class ViewController: UIViewController {
 
     
     @IBOutlet var urlField : UITextField!
-    var moviePlayer : MPMoviePlayerViewController?
+//    var moviePlayer : MPMoviePlayerViewController?
+//    var player : AVPlayer?
+//    var playerController : AVPlayerViewController?
     
     @IBAction func tapGesture(sender: AnyObject) {
         urlField.resignFirstResponder()
@@ -31,23 +36,42 @@ class ViewController: UIViewController {
         playVideo()
     }
     
-    var url = "http://api.cameo.tv/montage/xTsJQBVx.m3u8"
+//    var url = "http://api.cameo.tv/montage/xTsJQBVx.m3u8"
 //    var url = "http://api.cameo.tv/file/9bafd29deafc16edbfdc8dfcbc0489d1895c7178"
+//    var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
+    var path = NSBundle.mainBundle().pathForResource("trim", ofType: "mov")
+//    var path = NSBundle.mainBundle().pathForResource("rendered30fps", ofType: "m4v")!
     
+//    var url = "https://s3.amazonaws.com/messel.test.cameo.tv/victusSlowMo.mov"
+//    var url = "https://s3.amazonaws.com/messel.test.cameo.tv/rendered30fps.m4v"
     
     func initValues() {
-        urlField.text = url;
+        urlField.text = path!;
     }
+    
 
     func playVideo() {
-        let videoURL = NSURL(string: urlField.text)
-        moviePlayer = MPMoviePlayerViewController(contentURL: videoURL )
-        NSLog("about to play video " + urlField.text)
-        if let player = moviePlayer {
-            NSLog("setting stuff")
-            player.view.frame = self.view.bounds
-            self.presentViewController(moviePlayer!, animated: true, completion: nil)
-            NSLog("all done")
+//        let videoURL = NSURL(string: urlField.text)
+        let videoURL = NSURL.fileURLWithPath(urlField.text)
+
+//        moviePlayer = MPMoviePlayerViewController(contentURL: videoURL )
+//        NSLog("about to play video " + urlField.text)
+//        if let player = moviePlayer {
+//            NSLog("setting stuff")
+//            player.view.frame = self.view.bounds
+//            self.presentViewController(moviePlayer!, animated: true, completion: nil)
+//            NSLog("all done")
+//        }
+
+        if let player = AVPlayer(URL: videoURL) {
+            let playerController = AVPlayerViewController()
+            playerController.player = player
+            self.addChildViewController(playerController)
+            self.view.addSubview(playerController.view!)
+            playerController.view.frame = self.view.frame
+        
+            player.play()
+            
         }
         else {
             NSLog("no player")

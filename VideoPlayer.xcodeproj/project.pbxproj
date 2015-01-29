@@ -13,6 +13,9 @@
 		9B3B977119A78071005F0396 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9B3B976F19A78071005F0396 /* Main.storyboard */; };
 		9B3B977319A78071005F0396 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B3B977219A78071005F0396 /* Images.xcassets */; };
 		9B3B977F19A78071005F0396 /* VideoPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3B977E19A78071005F0396 /* VideoPlayerTests.swift */; };
+		9BA9F39C1A7AE1EA00A9FDFE /* rendered30fps.m4v in Resources */ = {isa = PBXBuildFile; fileRef = 9BA9F39A1A7AE1EA00A9FDFE /* rendered30fps.m4v */; };
+		9BA9F39D1A7AE1EA00A9FDFE /* victusSlowMo.mov in Resources */ = {isa = PBXBuildFile; fileRef = 9BA9F39B1A7AE1EA00A9FDFE /* victusSlowMo.mov */; };
+		9BA9F39F1A7AE47B00A9FDFE /* trim.mov in Resources */ = {isa = PBXBuildFile; fileRef = 9BA9F39E1A7AE47B00A9FDFE /* trim.mov */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +39,9 @@
 		9B3B977819A78071005F0396 /* VideoPlayerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoPlayerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B3B977D19A78071005F0396 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B3B977E19A78071005F0396 /* VideoPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerTests.swift; sourceTree = "<group>"; };
+		9BA9F39A1A7AE1EA00A9FDFE /* rendered30fps.m4v */ = {isa = PBXFileReference; lastKnownFileType = file; path = rendered30fps.m4v; sourceTree = "<group>"; };
+		9BA9F39B1A7AE1EA00A9FDFE /* victusSlowMo.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = victusSlowMo.mov; sourceTree = "<group>"; };
+		9BA9F39E1A7AE47B00A9FDFE /* trim.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = trim.mov; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +68,9 @@
 				9B3B976519A78071005F0396 /* VideoPlayer */,
 				9B3B977B19A78071005F0396 /* VideoPlayerTests */,
 				9B3B976419A78071005F0396 /* Products */,
+				9BA9F39A1A7AE1EA00A9FDFE /* rendered30fps.m4v */,
+				9BA9F39B1A7AE1EA00A9FDFE /* victusSlowMo.mov */,
+				9BA9F39E1A7AE47B00A9FDFE /* trim.mov */,
 			);
 			sourceTree = "<group>";
 		};
@@ -193,7 +202,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B3B977119A78071005F0396 /* Main.storyboard in Resources */,
+				9BA9F39F1A7AE47B00A9FDFE /* trim.mov in Resources */,
+				9BA9F39C1A7AE1EA00A9FDFE /* rendered30fps.m4v in Resources */,
 				9B3B977319A78071005F0396 /* Images.xcassets in Resources */,
+				9BA9F39D1A7AE1EA00A9FDFE /* victusSlowMo.mov in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,6 +413,7 @@
 				9B3B978419A78071005F0396 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9B3B978519A78071005F0396 /* Build configuration list for PBXNativeTarget "VideoPlayerTests" */ = {
 			isa = XCConfigurationList;
@@ -409,6 +422,7 @@
 				9B3B978719A78071005F0396 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
