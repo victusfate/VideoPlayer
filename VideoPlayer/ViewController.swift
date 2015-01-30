@@ -66,9 +66,11 @@ class ViewController: UIViewController {
         if let player = AVPlayer(URL: videoURL) {
             let playerController = AVPlayerViewController()
             playerController.player = player
-            self.addChildViewController(playerController)
-            self.view.addSubview(playerController.view!)
+//            self.addChildViewController(playerController)
+//            self.view.addSubview(playerController.view!)
             playerController.view.frame = self.view.frame
+            self.presentViewController(playerController, animated: true, completion: nil)
+            NSLog("all done")
         
             player.play()
             
