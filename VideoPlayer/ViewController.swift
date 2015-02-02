@@ -17,9 +17,17 @@ class ViewController: UIViewController {
 
     
     @IBOutlet var urlField : UITextField!
-//    var moviePlayer : MPMoviePlayerViewController?
-//    var player : AVPlayer?
-//    var playerController : AVPlayerViewController?
+
+    var videoAsset : AVURLAsset?
+
+    var composition : AVMutableComposition?
+    var compositionVideoTrack : AVMutableCompositionTrack?
+
+    var playerItem : AVPlayerItem?
+    var player : AVPlayer?
+    var playerController : AVPlayerViewController?
+    var rateSet = false
+    
     
     @IBAction func tapGesture(sender: AnyObject) {
         urlField.resignFirstResponder()
@@ -38,8 +46,8 @@ class ViewController: UIViewController {
     
 //    var url = "http://api.cameo.tv/montage/xTsJQBVx.m3u8"
 //    var url = "http://api.cameo.tv/file/9bafd29deafc16edbfdc8dfcbc0489d1895c7178"
-//    var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
-    var path = NSBundle.mainBundle().pathForResource("trim", ofType: "mov")
+    var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
+//    var path = NSBundle.mainBundle().pathForResource("trim", ofType: "mov")
 //    var path = NSBundle.mainBundle().pathForResource("rendered30fps", ofType: "m4v")!
     
 //    var url = "https://s3.amazonaws.com/messel.test.cameo.tv/victusSlowMo.mov"
@@ -51,33 +59,55 @@ class ViewController: UIViewController {
     
 
     func playVideo() {
-//        let videoURL = NSURL(string: urlField.text)
         let videoURL = NSURL.fileURLWithPath(urlField.text)
 
-//        moviePlayer = MPMoviePlayerViewController(contentURL: videoURL )
-//        NSLog("about to play video " + urlField.text)
-//        if let player = moviePlayer {
-//            NSLog("setting stuff")
-//            player.view.frame = self.view.bounds
-//            self.presentViewController(moviePlayer!, animated: true, completion: nil)
-//            NSLog("all done")
-//        }
+        // work in progress
+        /*
+        self.composition = AVMutableComposition()
+        self.compositionVideoTrack = self.composition?.addMutableTrackWithMediaType(AVMediaTypeVideo, preferredTrackID: Int32(kCMPersistentTrackID_Invalid))
+        var error : NSErrorPointer?
+        var trimStart = CMTime(value: 75192227, timescale: 1000000000, flags: 3, epoch: 0)
+        var duration = CMTime(value: 2772044114, timescale: 1000000000, flags: 3, epoch: 0)
+        var timeRange = CMTimeRange(start: trimStart, duration: duration)
+        var videoInsertResult = compositionVideoTrack?.insertTimeRange(timeRange: timeRange,
+            ofTrack: videoAsset?.tracksWithMediaType(AVMediaTypeVideo),
+            atTime: kCMTimeZero,
+            error: error)
+        */
 
-        if let player = AVPlayer(URL: videoURL) {
-            let playerController = AVPlayerViewController()
-            playerController.player = player
+        
+        self.videoAsset = AVURLAsset(URL: videoURL, options: nil)
+        self.playerItem = AVPlayerItem(asset: self.videoAsset)
+        self.player = AVPlayer(playerItem: self.playerItem)
+        self.playerController = AVPlayerViewController()
+        self.playerController!.player = player
 //            self.addChildViewController(playerController)
 //            self.view.addSubview(playerController.view!)
-            playerController.view.frame = self.view.frame
-            self.presentViewController(playerController, animated: true, completion: nil)
-            NSLog("all done")
-        
-            player.play()
-            
-        }
-        else {
-            NSLog("no player")
-        }
+        self.playerController!.view.frame = self.view.frame
+        self.presentViewController(self.playerController!, animated: true, completion: nil)
+        self.player!.addPeriodicTimeObserverForInterval(
+            CMTimeMake(1,30),
+            queue: dispatch_get_main_queue(),
+            usingBlock: {
+                (callbackTime: CMTime) -> Void in
+                let t1 = CMTimeGetSeconds(callbackTime)
+                let t2 = CMTimeGetSeconds(self.player!.currentTime())
+                if t2 > 0.075192227 && t2 < 2.772044114 && !(self.rateSet) {
+                    self.rateSet = true
+                    self.player!.setRate(0.125, time: kCMTimeInvalid, atHostTime: kCMTimeInvalid)
+//                    self.player!.videoComposition
+                    println("setting rate r1 \(self.player!.rate)")
+                }
+                else if t2 >= 2.772044114 && self.rateSet {
+                    self.rateSet = false
+                    self.player!.setRate(1, time: kCMTimeInvalid, atHostTime: kCMTimeInvalid)
+                    println("setting rate r2 \(self.player!.rate)")
+                }
+                println("periodic observer called \(t1)) player time \(t2)")
+        })
+        NSLog("all done")
+
+        self.player!.play()
     }
     
     
