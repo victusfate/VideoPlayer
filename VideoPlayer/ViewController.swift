@@ -94,8 +94,8 @@ class ViewController: UIViewController {
         if !audioInsertResult! || error != nil {
             println("error inserting time range for audio")
         }
-        self.compositionVideoTrack?.scaleTimeRange(timeRange, toDuration: CMTimeMake(duration.value * 8, duration.timescale))
-        self.compositionAudioTrack?.scaleTimeRange(timeRange, toDuration: CMTimeMake(duration.value * 8, duration.timescale))
+        self.compositionVideoTrack?.scaleTimeRange(timeRange, toDuration: CMTimeMake(Int64(Double(duration.value) * videoScaleFactor), duration.timescale))
+        self.compositionAudioTrack?.scaleTimeRange(timeRange, toDuration: CMTimeMake(Int64(Double(duration.value) * videoScaleFactor), duration.timescale))
 
         
 //        self.playerItem = AVPlayerItem(asset: self.videoAsset)
@@ -108,8 +108,6 @@ class ViewController: UIViewController {
     
         self.playerController = AVPlayerViewController()
         self.playerController!.player = player
-//            self.addChildViewController(playerController)
-//            self.view.addSubview(playerController.view!)
         self.playerController!.view.frame = self.view.frame
         self.presentViewController(self.playerController!, animated: true, completion: nil)
         self.player!.addPeriodicTimeObserverForInterval(
@@ -119,18 +117,9 @@ class ViewController: UIViewController {
                 (callbackTime: CMTime) -> Void in
                 let t1 = CMTimeGetSeconds(callbackTime)
                 let t2 = CMTimeGetSeconds(self.player!.currentTime())
-//                if t2 > 0.075192227 && t2 < 2.772044114 && !(self.rateSet) {
-//                    self.rateSet = true
-//                    self.player!.setRate(0.125, time: kCMTimeInvalid, atHostTime: kCMTimeInvalid)
-////                    self.player!.videoComposition
-//                    println("setting rate r1 \(self.player!.rate)")
-//                }
-//                else if t2 >= 2.772044114 && self.rateSet {
-//                    self.rateSet = false
-//                    self.player!.setRate(1, time: kCMTimeInvalid, atHostTime: kCMTimeInvalid)
-//                    println("setting rate r2 \(self.player!.rate)")
-//                }
-                println("periodic observer called \(t1)) player time \(t2)")
+
+//                println("periodic observer called \(t1) player time \(t2)")
+                println(t2)
         })
         NSLog("all done")
 
