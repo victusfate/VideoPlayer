@@ -78,7 +78,7 @@ class ViewController: UIViewController {
         var allTime = CMTimeRange(start: kCMTimeZero, duration: self.videoAsset!.duration)
         
         let videoScaleFactor : Double = 8.0
-        let videoTracks : [AVAssetTrack] = self.videoAsset?.tracksWithMediaType(AVMediaTypeVideo) as [AVAssetTrack]
+        let videoTracks : [AVAssetTrack] = self.videoAsset?.tracksWithMediaType(AVMediaTypeVideo) as! [AVAssetTrack]
         var videoInsertResult = self.compositionVideoTrack?.insertTimeRange(allTime,
             ofTrack: videoTracks[0],
             atTime: kCMTimeZero,
@@ -86,7 +86,7 @@ class ViewController: UIViewController {
         if !videoInsertResult! || error != nil {
             println("error inserting time range for video")
         }
-        let audioTracks : [AVAssetTrack] = self.videoAsset?.tracksWithMediaType(AVMediaTypeAudio) as [AVAssetTrack]
+        let audioTracks : [AVAssetTrack] = self.videoAsset?.tracksWithMediaType(AVMediaTypeAudio) as! [AVAssetTrack]
         var audioInsertResult = self.compositionAudioTrack?.insertTimeRange(allTime,
             ofTrack: audioTracks[0],
             atTime: kCMTimeZero,
