@@ -45,6 +45,7 @@ class ViewController: UIViewController {
         playVideo()
     }
     
+//    var path = "https://livestream.peer5.com/video/kite/index.m3u8"
 //    var path = "https://d2ohigj5624u4a.cloudfront.net/bitcodin/m3u8s/stream.m3u8"
     var path = "http://192.168.40.74:5000/hls?url=http://s3.amazonaws.com/media.sp0n.com/bitcodin/m3u8s/stream.m3u8"
 //    var path = "https://sp0n-stream-api.herokuapp.com/hls?url=https://s3.amazonaws.com/media.sp0n.com/bitcodin/m3u8s/stream.m3u8"
@@ -61,15 +62,12 @@ class ViewController: UIViewController {
     
 
     func playVideo() {
-        let videoURL = NSURL.fileURLWithPath(urlField.text!)
-
-        self.videoAsset = AVURLAsset(URL: videoURL, options: nil)
-        self.playerItem = AVPlayerItem(asset: self.videoAsset!)
-        self.playerItem?.audioTimePitchAlgorithm = AVAudioTimePitchAlgorithmVarispeed
-        self.player = AVPlayer(playerItem: self.playerItem!)
-    
+        let videoURL = NSURL(string: urlField.text!)
+        
+        self.player = AVPlayer(URL: videoURL!)
         self.playerController = AVPlayerViewController()
-        self.playerController!.player = player
+        
+        self.playerController!.player = self.player
         self.playerController!.view.frame = self.view.frame
         self.presentViewController(self.playerController!, animated: true, completion: nil)
         self.player!.play()
