@@ -13,6 +13,9 @@ import MediaPlayer
 import AVKit
 import AVFoundation
 
+
+private var myContext = 0
+
 class ViewController: UIViewController {
 
     
@@ -28,6 +31,7 @@ class ViewController: UIViewController {
     var player : AVPlayer?
     var playerController : AVPlayerViewController?
     var rateSet = false
+    var timer = NSTimer()
     
     
     @IBAction func tapGesture(sender: AnyObject) {
@@ -45,13 +49,11 @@ class ViewController: UIViewController {
         playVideo()
     }
     
+//    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/testStream/testStream.m3u8"
+    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/0ba0f916-8f3e-4a2a-8fae-cf95405aa65b/0ba0f916-8f3e-4a2a-8fae-cf95405aa65b.m3u8"
+
 //    var path = "https://livestream.peer5.com/video/kite/index.m3u8"
-//    var path = "https://d2ohigj5624u4a.cloudfront.net/bitcodin/m3u8s/stream.m3u8"
-    var path = "http://192.168.40.74:5000/hls?url=http://s3.amazonaws.com/media.sp0n.com/bitcodin/m3u8s/stream.m3u8"
-//    var path = "https://sp0n-stream-api.herokuapp.com/hls?url=https://s3.amazonaws.com/media.sp0n.com/bitcodin/m3u8s/stream.m3u8"
-//    var path = "https://bitcodin_test.storage.googleapis.com/livestream20151279460/m3u8s/stream.m3u8"
-//    var path = "https://s3.amazonaws.com/media.sp0n.com/bitcodin/hls/3000k/abc.m3u8"
-    // var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
+//    var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
 //    var path = NSBundle.mainBundle().pathForResource("trim", ofType: "mov")
 //    var path = NSBundle.mainBundle().pathForResource("rendered30fps", ofType: "m4v")!
     
@@ -64,13 +66,67 @@ class ViewController: UIViewController {
     func playVideo() {
         let videoURL = NSURL(string: urlField.text!)
         
-        self.player = AVPlayer(URL: videoURL!)
+        self.playerItem = AVPlayerItem(URL: videoURL!)
+        self.player = AVPlayer(playerItem: self.playerItem!)
+        self.player!.actionAtItemEnd = AVPlayerActionAtItemEnd.None
         self.playerController = AVPlayerViewController()
         
         self.playerController!.player = self.player
         self.playerController!.view.frame = self.view.frame
         self.presentViewController(self.playerController!, animated: true, completion: nil)
         self.player!.play()
+        
+        NSNotificationCenter.defaultCenter().addObserver(self,
+            selector: "itemDidFinishPlaying:",
+            name: AVPlayerItemDidPlayToEndTimeNotification,
+            object: self.playerItem)
+
+        self.timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "itemStatus", userInfo: nil, repeats: true)
+
+        self.player!.addObserver(self, forKeyPath: "rate", options: .New, context: &myContext)
+        self.player!.addObserver(self, forKeyPath: "status", options: .New, context: &myContext)
+        self.player!.addObserver(self, forKeyPath: AVPlayerItemDidPlayToEndTimeNotification, options: .New, context: &myContext)
+    }
+    
+    func itemStatus() {
+        var endTime : Double = 0
+        if let aPlayerItem = self.playerItem {
+            endTime = CMTimeGetSeconds(aPlayerItem.forwardPlaybackEndTime)
+        }
+        print("buffer empty \(self.playerItem?.playbackBufferEmpty) end time \(endTime) rate \(self.player?.rate) playerError \(self.player?.error)")
+    }
+    
+    func itemDidFinishPlaying(notification: NSNotification) {
+        print("Reached End")
+    }
+    
+    
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        
+        if context == &myContext {
+            if let newValue = change?[NSKeyValueChangeNewKey] where keyPath == "status" {
+                print("kvo status \(newValue)")
+            }
+            else if let newValue = change?[NSKeyValueChangeNewKey] where keyPath == "rate" {
+                let rate: Float = CFloat(newValue as! NSNumber)
+                print("kvo rate \(rate)")
+//                if rate == 0.0 // Playback stopped
+//                else if rate == 1.0 // Normal playback
+//                else if rate == -1.0 { // Reverse playback
+            }
+            else if keyPath == AVPlayerItemDidPlayToEndTimeNotification {
+                print("kvo did play to end")
+            }
+        }
+        else {
+            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+        }
+    }
+    
+    func showAlert(message: String) {
+        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
     }
     
     
