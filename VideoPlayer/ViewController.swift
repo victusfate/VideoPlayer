@@ -14,10 +14,8 @@ import AVKit
 import AVFoundation
 
 
-private var myContext = 0
 
 class ViewController: UIViewController {
-
     
     @IBOutlet var urlField : UITextField!
 
@@ -27,11 +25,13 @@ class ViewController: UIViewController {
     var compositionVideoTrack : AVMutableCompositionTrack?
     var compositionAudioTrack : AVMutableCompositionTrack?
 
+    private var myContext = 0
+
     var playerItem : AVPlayerItem?
     var player : AVPlayer?
     var playerController : AVPlayerViewController?
     var rateSet = false
-    var timer = NSTimer()
+    var timer : NSTimer? = NSTimer()
     
     
     @IBAction func tapGesture(sender: AnyObject) {
@@ -50,7 +50,7 @@ class ViewController: UIViewController {
     }
     
 //    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/testStream/testStream.m3u8"
-    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/0ba0f916-8f3e-4a2a-8fae-cf95405aa65b/0ba0f916-8f3e-4a2a-8fae-cf95405aa65b.m3u8"
+    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/4adadeb8-cb3e-4714-b736-b754565363c7/4adadeb8-cb3e-4714-b736-b754565363c7.m3u8"
 
 //    var path = "https://livestream.peer5.com/video/kite/index.m3u8"
 //    var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
@@ -62,13 +62,52 @@ class ViewController: UIViewController {
         urlField.text = path;
     }
     
+    func removeObserver() {
+        if let aPlayer = self.player {
+            aPlayer.removeObserver(self,forKeyPath:"rate")
+            aPlayer.removeObserver(self,forKeyPath:"status")
+            NSNotificationCenter.defaultCenter().removeObserver(self)
+        }
+    }
+    
+    func addObserver() {
+        if let aPlayerItem = self.playerItem {
+            print("adding observer")
+            NSNotificationCenter.defaultCenter().addObserver(self,
+                selector: "itemDidFinishPlaying:",
+                name: AVPlayerItemDidPlayToEndTimeNotification,
+                object: aPlayerItem)
+            
+            NSNotificationCenter.defaultCenter().addObserver(self,
+                selector: "itemDidFailedPlayingToEnd:",
+                name: AVPlayerItemFailedToPlayToEndTimeNotification,
+                object: aPlayerItem)
+            
+            NSNotificationCenter.defaultCenter().addObserver(self,
+                selector: "itemDidStall:",
+                name: AVPlayerItemPlaybackStalledNotification,
+                object: aPlayerItem)
+        }
+        
+        if let aPlayer = self.player {
+            aPlayer.addObserver(self, forKeyPath: "rate", options: .New, context: &myContext)
+            aPlayer.addObserver(self, forKeyPath: "status", options: .New, context: &myContext)
+        }
+        
+    }
 
     func playVideo() {
+        
+        self.removeObserver()
+    
         let videoURL = NSURL(string: urlField.text!)
         
         self.playerItem = AVPlayerItem(URL: videoURL!)
         self.player = AVPlayer(playerItem: self.playerItem!)
         self.player!.actionAtItemEnd = AVPlayerActionAtItemEnd.None
+        
+        self.addObserver()
+        
         self.playerController = AVPlayerViewController()
         
         self.playerController!.player = self.player
@@ -76,29 +115,38 @@ class ViewController: UIViewController {
         self.presentViewController(self.playerController!, animated: true, completion: nil)
         self.player!.play()
         
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "itemDidFinishPlaying:",
-            name: AVPlayerItemDidPlayToEndTimeNotification,
-            object: self.playerItem)
-
         self.timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "itemStatus", userInfo: nil, repeats: true)
 
-        self.player!.addObserver(self, forKeyPath: "rate", options: .New, context: &myContext)
-        self.player!.addObserver(self, forKeyPath: "status", options: .New, context: &myContext)
-        self.player!.addObserver(self, forKeyPath: AVPlayerItemDidPlayToEndTimeNotification, options: .New, context: &myContext)
     }
     
     func itemStatus() {
         var endTime : Double = 0
+        var likelyToKeepUp: Bool?
+        var bufferFull: Bool?
+        var bufferEmpty: Bool?
         if let aPlayerItem = self.playerItem {
             endTime = CMTimeGetSeconds(aPlayerItem.forwardPlaybackEndTime)
+            likelyToKeepUp = aPlayerItem.playbackLikelyToKeepUp
+            bufferFull = aPlayerItem.playbackBufferFull
+            bufferEmpty = aPlayerItem.playbackBufferEmpty
         }
-        print("buffer empty \(self.playerItem?.playbackBufferEmpty) end time \(endTime) rate \(self.player?.rate) playerError \(self.player?.error)")
+        print("buffer empty \(self.playerItem?.playbackBufferEmpty) end time \(endTime) rate \(self.player?.rate) playerError \(self.player?.error) likely to keep up \(likelyToKeepUp) pb buffer full \(bufferFull) pb buffer empty \(bufferEmpty)")
+    }
+    
+    func itemDidFailedPlayingToEnd(notification: NSNotification) {
+        print("AVPlayer failed playing to the end stream")
+    }
+    
+    func itemDidStall(notification: NSNotification) {
+        print("AVPlayer got stalled stream url")
     }
     
     func itemDidFinishPlaying(notification: NSNotification) {
-        print("Reached End")
+        print("AVPlayer finished playing stream url")
+        self.timer?.invalidate()
+        self.timer = nil
     }
+    
     
     
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
@@ -113,9 +161,6 @@ class ViewController: UIViewController {
 //                if rate == 0.0 // Playback stopped
 //                else if rate == 1.0 // Normal playback
 //                else if rate == -1.0 { // Reverse playback
-            }
-            else if keyPath == AVPlayerItemDidPlayToEndTimeNotification {
-                print("kvo did play to end")
             }
         }
         else {
@@ -139,6 +184,10 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    deinit {
+        self.removeObserver()
     }
 
 
