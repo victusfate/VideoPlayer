@@ -25,32 +25,32 @@ class ViewController: UIViewController {
     var compositionVideoTrack : AVMutableCompositionTrack?
     var compositionAudioTrack : AVMutableCompositionTrack?
 
-    private var myContext = 0
+    fileprivate var myContext = 0
 
     var playerItem : AVPlayerItem?
     var player : AVPlayer?
     var playerController : AVPlayerViewController?
     var rateSet = false
-    var timer : NSTimer? = NSTimer()
+    var timer : Timer? = Timer()
     
     
-    @IBAction func tapGesture(sender: AnyObject) {
+    @IBAction func tapGesture(_ sender: AnyObject) {
         urlField.resignFirstResponder()
         NSLog("tapGesture called " + urlField.text!)
     }
 
-    @IBAction func urlChanged(sender: AnyObject) {
+    @IBAction func urlChanged(_ sender: AnyObject) {
         NSLog("urlChanged called " + urlField.text!)
         playVideo()
     }
 
-    @IBAction func playPushed(sender: AnyObject) {
+    @IBAction func playPushed(_ sender: AnyObject) {
         NSLog("playPushed called " + urlField.text!)
         playVideo()
     }
     
 //    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/testStream/testStream.m3u8"
-    var path = "http://d2ohigj5624u4a.cloudfront.net/streams/4adadeb8-cb3e-4714-b736-b754565363c7/4adadeb8-cb3e-4714-b736-b754565363c7.m3u8"
+    var path = "https://d2ohigj5624u4a.cloudfront.net/streams/278ec4f5-fb1a-4afb-8f9a-7997007b21c5/vod_278ec4f5-fb1a-4afb-8f9a-7997007b21c5.m3u8"
 
 //    var path = "https://livestream.peer5.com/video/kite/index.m3u8"
 //    var path = NSBundle.mainBundle().pathForResource("victusSlowMo", ofType: "mov")
@@ -66,32 +66,32 @@ class ViewController: UIViewController {
         if let aPlayer = self.player {
             aPlayer.removeObserver(self,forKeyPath:"rate")
             aPlayer.removeObserver(self,forKeyPath:"status")
-            NSNotificationCenter.defaultCenter().removeObserver(self)
+            NotificationCenter.default.removeObserver(self)
         }
     }
     
     func addObserver() {
         if let aPlayerItem = self.playerItem {
             print("adding observer")
-            NSNotificationCenter.defaultCenter().addObserver(self,
-                selector: "itemDidFinishPlaying:",
-                name: AVPlayerItemDidPlayToEndTimeNotification,
+            NotificationCenter.default.addObserver(self,
+                selector: #selector(ViewController.itemDidFinishPlaying(_:)),
+                name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
                 object: aPlayerItem)
             
-            NSNotificationCenter.defaultCenter().addObserver(self,
-                selector: "itemDidFailedPlayingToEnd:",
-                name: AVPlayerItemFailedToPlayToEndTimeNotification,
+            NotificationCenter.default.addObserver(self,
+                selector: #selector(ViewController.itemDidFailedPlayingToEnd(_:)),
+                name: NSNotification.Name.AVPlayerItemFailedToPlayToEndTime,
                 object: aPlayerItem)
             
-            NSNotificationCenter.defaultCenter().addObserver(self,
-                selector: "itemDidStall:",
-                name: AVPlayerItemPlaybackStalledNotification,
+            NotificationCenter.default.addObserver(self,
+                selector: #selector(ViewController.itemDidStall(_:)),
+                name: NSNotification.Name.AVPlayerItemPlaybackStalled,
                 object: aPlayerItem)
         }
         
         if let aPlayer = self.player {
-            aPlayer.addObserver(self, forKeyPath: "rate", options: .New, context: &myContext)
-            aPlayer.addObserver(self, forKeyPath: "status", options: .New, context: &myContext)
+            aPlayer.addObserver(self, forKeyPath: "rate", options: .new, context: &myContext)
+            aPlayer.addObserver(self, forKeyPath: "status", options: .new, context: &myContext)
         }
         
     }
@@ -100,11 +100,11 @@ class ViewController: UIViewController {
         
         self.removeObserver()
     
-        let videoURL = NSURL(string: urlField.text!)
+        let videoURL = URL(string: urlField.text!)
         
-        self.playerItem = AVPlayerItem(URL: videoURL!)
+        self.playerItem = AVPlayerItem(url: videoURL!)
         self.player = AVPlayer(playerItem: self.playerItem!)
-        self.player!.actionAtItemEnd = AVPlayerActionAtItemEnd.None
+        self.player!.actionAtItemEnd = AVPlayerActionAtItemEnd.none
         
         self.addObserver()
         
@@ -112,10 +112,10 @@ class ViewController: UIViewController {
         
         self.playerController!.player = self.player
         self.playerController!.view.frame = self.view.frame
-        self.presentViewController(self.playerController!, animated: true, completion: nil)
+        self.present(self.playerController!, animated: true, completion: nil)
         self.player!.play()
         
-        self.timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "itemStatus", userInfo: nil, repeats: true)
+        self.timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(ViewController.itemStatus), userInfo: nil, repeats: true)
 
     }
     
@@ -126,22 +126,22 @@ class ViewController: UIViewController {
         var bufferEmpty: Bool?
         if let aPlayerItem = self.playerItem {
             endTime = CMTimeGetSeconds(aPlayerItem.forwardPlaybackEndTime)
-            likelyToKeepUp = aPlayerItem.playbackLikelyToKeepUp
-            bufferFull = aPlayerItem.playbackBufferFull
-            bufferEmpty = aPlayerItem.playbackBufferEmpty
+            likelyToKeepUp = aPlayerItem.isPlaybackLikelyToKeepUp
+            bufferFull = aPlayerItem.isPlaybackBufferFull
+            bufferEmpty = aPlayerItem.isPlaybackBufferEmpty
         }
-        print("buffer empty \(self.playerItem?.playbackBufferEmpty) end time \(endTime) rate \(self.player?.rate) playerError \(self.player?.error) likely to keep up \(likelyToKeepUp) pb buffer full \(bufferFull) pb buffer empty \(bufferEmpty)")
+        print("buffer empty \(self.playerItem?.isPlaybackBufferEmpty) end time \(endTime) rate \(self.player?.rate) playerError \(self.player?.error) likely to keep up \(likelyToKeepUp) pb buffer full \(bufferFull) pb buffer empty \(bufferEmpty)")
     }
     
-    func itemDidFailedPlayingToEnd(notification: NSNotification) {
+    func itemDidFailedPlayingToEnd(_ notification: Notification) {
         print("AVPlayer failed playing to the end stream")
     }
     
-    func itemDidStall(notification: NSNotification) {
+    func itemDidStall(_ notification: Notification) {
         print("AVPlayer got stalled stream url")
     }
     
-    func itemDidFinishPlaying(notification: NSNotification) {
+    func itemDidFinishPlaying(_ notification: Notification) {
         print("AVPlayer finished playing stream url")
         self.timer?.invalidate()
         self.timer = nil
@@ -149,13 +149,13 @@ class ViewController: UIViewController {
     
     
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         if context == &myContext {
-            if let newValue = change?[NSKeyValueChangeNewKey] where keyPath == "status" {
+            if let newValue = change?[NSKeyValueChangeKey.newKey], keyPath == "status" {
                 print("kvo status \(newValue)")
             }
-            else if let newValue = change?[NSKeyValueChangeNewKey] where keyPath == "rate" {
+            else if let newValue = change?[NSKeyValueChangeKey.newKey], keyPath == "rate" {
                 let rate: Float = CFloat(newValue as! NSNumber)
                 print("kvo rate \(rate)")
 //                if rate == 0.0 // Playback stopped
@@ -164,14 +164,14 @@ class ViewController: UIViewController {
             }
         }
         else {
-            super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
     
-    func showAlert(message: String) {
-        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.Default, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+    func showAlert(_ message: String) {
+        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     
